@@ -2,27 +2,32 @@
 
 A basic tool to import your `.mbox` file into MongoDB for query.
 
-It's just a basic side-project development developed in a few hours for fun. Don't hesitate to provide pull-requests or to submit ideas.
-
-On my machine (core i5, 8gb of ram), it imports approximately `2500 mails/second`.
+Work in progress. Additional info and examples you can see in [Python version](https://github.com/Rpsl/mongodb-gmail) 
 
 ## Build
 
 ```
-go get github.com/bthomson/mbox
-go get gopkg.in/mgo.v2
-go build mboximporter.go
-
+go mod download
+go build -o mbox-importer ./
 ```
 
 ## Usage
 
 ```
-Usage of ./mboximporter:
-    -c=20: Maximum amount of messages in the same time in the pool of process.
-    -d="mails": The DB name to use in MongoDB.
-    -f="mails.mbox": Name of the filename to import
-    -m="localhost": The Mongo URI to connect to MongoDB.
-    -n=-1: Number of mails to import.
-    -w=10: Maximum amount of workers.
+Usage of ./mbox-importer:
+  -body
+    	Parse and insert body of the emails
+  -database string
+    	The Database name to use in MongoDB (default "mbox-importer")
+  -filename string
+    	Name of the filename to import
+  -headers
+    	Parse and insert all headers of the emails
+  -init
+    	Drop if exist collection and create fresh
+  -mongo string
+    	The Mongo URI to connect to MongoDB (default "root:example@127.0.0.1")
 ```
+
+
+
