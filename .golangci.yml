@@ -1,0 +1,29 @@
+linters:
+  enable:
+    - bodyclose
+    - dupl
+    - funlen
+    - gochecknoglobals
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - interfacer
+    - maligned
+    - misspell
+    - nakedret
+    - rowserrcheck
+    - scopelint
+    - stylecheck
+    - unconvert
+    - whitespace
+    - wsl
+  disable:
+    - errcheck
+
+run:
+  deadline: 3m
+  skip-dirs:
+    - bin
+    - docs

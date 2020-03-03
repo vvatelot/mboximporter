@@ -5,9 +5,9 @@ import (
 	"sync"
 
 	"github.com/rpsl/mboximporter/importer"
-	"github.com/rpsl/mboximporter/mongodb"
 )
 
+// Importer command
 type Importer struct {
 	Mongo    string `help:"The Mongo URI to connect to MongoDB"`
 	Database string `help:"The Database name to use in MongoDB"`
@@ -17,6 +17,10 @@ type Importer struct {
 	Init     bool   `help:"Drop if exist collection and create fresh"`
 }
 
+const batchSize = 500
+
+// NewImport command
+// todo: sync names with struct
 func NewImport() *Importer {
 	return &Importer{
 		Mongo:    "root:example@127.0.0.1",
@@ -27,8 +31,9 @@ func NewImport() *Importer {
 	}
 }
 
+// Run ...
 func (m *Importer) Run() error {
-	mongo := mongodb.NewConnection(m.Mongo, m.Database, "mails")
+	mongo := importer.NewConnection(m.Mongo, m.Database, "mails")
 	defer mongo.Close()
 
 	if m.Init {
@@ -38,25 +43,33 @@ func (m *Importer) Run() error {
 	var wg sync.WaitGroup
 
 	parser := importer.NewParser(m.Filename, m.Body, m.Headers)
-	queue := parser.ReadMessages(wg)
+	queue := parser.ReadMessages(&wg)
 
 	wg.Add(1)
+
 	go func() {
 		defer wg.Done()
+
 		var stack []importer.Mail
+
 		count := 0
 
 		for message := range queue {
 			count++
+
 			stack = append(stack, *message)
 
-			if len(stack) == 500 {
-				mongo.BulInsert(stack)
+			if len(stack) == batchSize {
+				mongo.BulkInsert(stack)
 
 				stack = nil
+
 				log.Println("Worked: ", count)
 			}
 		}
+
+		// Last insert
+		mongo.BulkInsert(stack)
 	}()
 
 	wg.Wait()

@@ -6,14 +6,15 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// Mail message struct inserted into MongoDB
 type Mail struct {
-	Id bson.ObjectId `bson:"_id,omitempty"`
+	ID bson.ObjectId `bson:"_id,omitempty"`
 
 	Headers    []string
 	Sender     []string
 	Recipients []string
 	Labels     []string
-	Date       time.Time
 	Subject    []string
+	Date       time.Time
 	Body       string
 }
