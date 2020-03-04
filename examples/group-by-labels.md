@@ -3,7 +3,7 @@
 ```
 db.mails.aggregate([
     { $unwind : "$labels" },
-	{ $group: {_id: "$labels", total: {$sum : 1} } },
-	{ $sort : {"total": -1 } }
+    { $group: {_id: "$labels", total: {$sum : 1} } },
+    { $sort : {"total": -1 } }
 ])
 ```
