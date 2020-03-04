@@ -46,9 +46,10 @@ And exec aggregation functions.
 ```
 > db.mails.aggregate([
     { $match: { labels: { $in: ['inbox'] } } },
-    { $group: {_id: "$from", total: {$sum : 1} } },
-    { $sort : {"total": -1 } }
-])
+    { $unwind: "$sender" },
+    { $group: {_id: "$sender", total: {$sum : 1} } },
+    { $sort: {"total": -1 } }
+]);
 ```
 
 ## Usage
