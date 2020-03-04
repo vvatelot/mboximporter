@@ -37,7 +37,7 @@ Connection to the MongoDB instance:
 mongo -u root -p example --authenticationDatabase admin
 
 > use mbox-importer
-switched to db google-mail
+switched to db mbox-importer
 ```
 
 And exec aggregation functions.
