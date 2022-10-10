@@ -1,14 +1,17 @@
 package importer
 
 import (
+	"context"
 	"log"
+	"time"
 
-	"gopkg.in/mgo.v2"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Mongo connection
 type Mongo struct {
-	session    *mgo.Session
+	client     *mongo.Client
 	collection string
 	dbname     string
 }
@@ -16,34 +19,34 @@ type Mongo struct {
 // NewConnection at MongoDB
 func NewConnection(url string, dbname string, collection string) *Mongo {
 	m := new(Mongo)
-	session, err := mgo.Dial(url)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+url))
 
 	if err != nil {
 		panic(err)
 	}
 
-	m.session = session
+	m.client = client
 	m.collection = collection
 	m.dbname = dbname
 
 	return m
 }
 
-func (m *Mongo) getCollection() *mgo.Collection {
-	return m.session.DB(m.dbname).C(m.collection)
+func (m *Mongo) getCollection() *mongo.Collection {
+	return m.client.Database(m.dbname).Collection(m.collection)
 }
 
 // BulkInsert into collection
 func (m *Mongo) BulkInsert(messages []Mail) {
-	bulk := m.getCollection().Bulk()
-	bulk.Unordered()
-
-	for _, message := range messages {
-		bulk.Insert(message)
+	bulk := m.getCollection()
+	var ui []interface{}
+	for _, t := range messages {
+		ui = append(ui, t)
 	}
 
-	_, err := bulk.Run()
-
+	_, err := bulk.InsertMany(context.TODO(), ui)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,10 +54,10 @@ func (m *Mongo) BulkInsert(messages []Mail) {
 
 // Init collection (drop all data)
 func (m *Mongo) Init() {
-	_ = m.getCollection().DropCollection()
+	_ = m.getCollection().Drop(context.TODO())
 }
 
 // Close connection
 func (m *Mongo) Close() {
-	m.session.Close()
+	m.client.Disconnect(context.TODO())
 }
